@@ -13,5 +13,9 @@ I have decided that I will also have a customer side to the app as well. This wi
 Use of Data
 
 My app will use an API to store data about the restaurants. For example, the name of the restaurant, the location, an image or logo. As well as this, there will be data for the menus such as images, names, descriptions and prices. Furthermore, some of the data will be for the users, such as their ID, their orders or baskets and their town or city so that the app wouldn’t show restaurants that are too far away.
+
 Novel User Experience
 The novelty of this app will be to show useful data to the user’s about their business as well as help to give them recommendations or ways that they could think about their business that they may not have thought of before. As well as this, the opportunity to gain funding through user donations would be a unique feature that not many apps have, especially in the food delivery space.
+
+Target Audience
+The target audience for my app will primarily be small businesses that are looking to improve their sales or their reach to customers. As well as this, the target audience for this app will include businesses that do not already have a delivery service set up and want an easy platform to use. Furthermore, the app will help businesses looking for funding from users that wish to donate to them. Finally, customers who wish to order from small businesses near them or who wish to donate to them will also be a target audience for this app.
