@@ -33,14 +33,13 @@ app.post('/restaurants', (req, res) => {
         name: restaurantName
     }
     data.push(newRestaurant)
-    res.status(201).json(`id: ${restaurantID}, name: ${restaurantName}`)
+    res.sendFile(path.join(__dirname, '../client', 'display.html'))
     console.log(data)
 })
 
 //Read all restaurants
-app.get('/getRestaurants', async (req, res) => {
-    res.json(data)
-    response.json({restaurants: data})
+app.get('/getRestaurants', (req, res) => {
+    res.json({restaurants: data})
 })
 
 //Update a restaurant by ID
@@ -55,7 +54,7 @@ app.get('/restaurant/:id', (req, res) => {
 })
 
 //Delete a restaurant by ID
-app.delete('/restaurant/:id', (req, res) => {
+app.delete('/deleteRestaurant/:id', (req, res) => {
     const id = parseInt(req.params.id)
     const index = data .findIndex((restaurant) => restaurant.id === id)
     if (index === -1){
