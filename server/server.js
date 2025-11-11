@@ -11,7 +11,7 @@ app.listen(port, () => {
 
 //Root to handle incoming requests
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/index.html'))
+    res.sendFile(path.join(__dirname, '../client/views/index.html'))
 })
 
 const data = [
@@ -25,7 +25,7 @@ app.use(express.json())
 app.use(express.urlencoded())
 
 //Create a new restaurant
-app.post('/restaurants', (req, res) => {
+app.post('/addRestaurant', (req, res) => {
     let restaurantID = data.length+1
     const restaurantName = req.body.name
     let newRestaurant = {
@@ -33,7 +33,7 @@ app.post('/restaurants', (req, res) => {
         name: restaurantName
     }
     data.push(newRestaurant)
-    res.sendFile(path.join(__dirname, '../client', 'display.html'))
+    res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.html'))
     console.log(data)
 })
 
