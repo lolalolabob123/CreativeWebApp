@@ -7,14 +7,10 @@
 </head>
 <body>
     <script>
-        function navigateHome() {
-            fetch('/addRestaurant')
-                .then(response => response.json)
-                .then(proccessData)
-        }
     </script>
     <nav>
-        <button onclick="navigateHome()">Home</button>
+        <button onclick="window.location.href = '/'">Home</button>
+        <button onclick="window.location.href = '/addRestaurant'">Add restaurant</button>
     </nav>
 </body>
 </html>

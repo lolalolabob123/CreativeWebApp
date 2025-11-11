@@ -39,6 +39,11 @@ app.post('/addRestaurant', (req, res) => {
     console.log(data)
 })
 
+//Serve the add restaurant page
+app.get('/addRestaurant', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.html'))
+})
+
 //Read all restaurants
 app.get('/getRestaurants', (req, res) => {
     res.json({ restaurants: data })
