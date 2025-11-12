@@ -49,6 +49,10 @@ app.get('/getRestaurants', (req, res) => {
     res.json({ restaurants: data })
 })
 
+app.get('/restaurants', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/views/RestaurantList.html'))
+})
+
 //Update a restaurant by ID
 app.get('/restaurant/:id', (req, res) => {
     const id = parseInt(req.params.id)

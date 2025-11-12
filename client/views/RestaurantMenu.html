@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
-    <form action="/restaurants" method="POST">
+    <nav>
+        <button onclick="window.location.href = '/'">Home</button>
+        <button onclick="window.location.href = '/addRestaurant'">Add restaurant</button>
+        <button onclick="window.location.href = '/restaurants'">View Restaurants</button>
+    </nav>
+    <form action="/addRestaurant" method="POST">
         <h2>Add a new Restaurant</h2>
         <label>Name</label>
         <input type="text" id="name" name="name" required>
@@ -14,4 +21,5 @@
         <button type="submit">Submit</button>
     </form>
 </body>
+
 </html>
