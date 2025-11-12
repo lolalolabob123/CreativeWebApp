@@ -3,12 +3,11 @@ const cors = require('cors')
 
 const app = express()
 const path = require('path')
-const { url } = require('inspector')
 
 
 app.use(cors())
 app.use(express.json())
-app.use(urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }))
 
 //Uses the port provided by the env file or uses the default
 const port = process.env.port || 3000
@@ -41,13 +40,13 @@ app.post('/addRestaurant', (req, res) => {
         name: restaurantName
     }
     data.push(newRestaurant)
-    res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.jsx'))
+    res.json({ message: 'Restaurant added successfully', restaurant: newRestaurant })
     console.log(data)
 })
 
 //Serve the add restaurant page
 app.get('/addRestaurant', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.jsx'))
+  res.sendFile(path.join(__dirname, '../client/pages/RestaurantMenu.jsx'))
 })
 
 //Read all restaurants

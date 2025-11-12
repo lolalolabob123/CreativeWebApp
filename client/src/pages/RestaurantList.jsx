@@ -1,0 +1,42 @@
+import { useState, useEffect } from 'react'
+
+export default function RestaurantList() {
+
+    const [restaurants, setRestaurants] = useState([])
+    function loadRestaurants() {
+        fetch('http://localhost:3000/getRestaurants')
+            .then(res => res.json())
+            .then(data => setRestaurants(data.restaurants))
+            .catch(err => console.error('Failed to load restaurants:', err))
+    }
+
+    useEffect(() => {
+        loadRestaurants()
+    }, [])
+
+    function deleteRestaurant(id) {
+        fetch(`http://localhost:3000/deleteRestaurant/${id}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to delete')
+                return response.json()
+            })
+            .then(() => loadRestaurants())
+            .catch(err => console.error(err))
+    }
+    return (
+        <>
+            <h2>RestaurantList</h2>
+            {restaurants.length === 0 ? (
+                <p>No restaurants found</p>
+            ) : (
+                <ul>
+                    {restaurants.map(r =>(
+                        <li key={r.id}>{r.name}</li>
+                    ))}
+                </ul>
+            )}
+        </>
+    )
+}
