@@ -1,6 +1,14 @@
 const express = require('express')
+const cors = require('cors')
+
 const app = express()
 const path = require('path')
+const { url } = require('inspector')
+
+
+app.use(cors())
+app.use(express.json())
+app.use(urlencoded({ extended: true }))
 
 //Uses the port provided by the env file or uses the default
 const port = process.env.port || 3000
@@ -11,9 +19,7 @@ app.listen(port, () => {
 
 //Root to handle incoming requests
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/views/index.html'))
-    console.log('__dirname:', __dirname);
-    console.log('Full path:', path.join(__dirname, '../client/views/index.html'));
+    res.sendFile(path.join(__dirname, '../client/src/App.jsx'))
 })
 
 const data = [
@@ -35,13 +41,13 @@ app.post('/addRestaurant', (req, res) => {
         name: restaurantName
     }
     data.push(newRestaurant)
-    res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.html'))
+    res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.jsx'))
     console.log(data)
 })
 
 //Serve the add restaurant page
 app.get('/addRestaurant', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.html'))
+  res.sendFile(path.join(__dirname, '../client/views/RestaurantMenu.jsx'))
 })
 
 //Read all restaurants
@@ -50,7 +56,7 @@ app.get('/getRestaurants', (req, res) => {
 })
 
 app.get('/restaurants', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/views/RestaurantList.html'))
+    res.sendFile(path.join(__dirname, '../client/views/RestaurantList.jsx'))
 })
 
 //Update a restaurant by ID
