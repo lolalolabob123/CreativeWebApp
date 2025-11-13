@@ -9,7 +9,7 @@ function App() {
     <>
     <nav style={{display: 'flex', gap: '20px', marginBottom: '20px', justifyContent: 'center'}}>
         <Link to='/'>Home</Link>
-        <Link to='addRestaurant'>Add Restaurant</Link>
+        <Link to='/addRestaurant'>Add Restaurant</Link>
         <Link to='/restaurants'>View Restaurants</Link>
     </nav>
 
