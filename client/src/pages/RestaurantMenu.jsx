@@ -1,14 +1,16 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function RestaurantMenu() {
 
     const [name, setName] = useState('')
     const [message, setMessage] = useState('')
+    const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        const response = await fetch('localhost:3000/addRestaurant', {
+        const response = await fetch('http://localhost:3000/addRestaurant', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
@@ -16,10 +18,11 @@ export default function RestaurantMenu() {
 
         if (response.ok) {
             const data = await response.json()
-            sendMessage(`Added Restaurant: ${data.restaurant.name}`)
+            setMessage(`Added Restaurant: ${data.restaurant.name}`)
+            navigate('/restaurants')
         }
         else {
-            sendMessage('Failed to add restaurant')
+            setMessage('Failed to add restaurant')
         }
     }
 

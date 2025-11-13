@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import '../styling/RestaurantList.css'
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 export default function RestaurantList() {
 
@@ -33,7 +35,11 @@ export default function RestaurantList() {
             ) : (
                 <ul>
                     {restaurants.map(r =>(
-                        <li key={r.id}>{r.name}</li>
+                        <li key={r.id}>
+                            {r.name}
+                            <button id='deleteBtn' onClick={() => deleteRestaurant(r.id)}
+                                ><RiDeleteBin6Line/></button>
+                            </li>
                     ))}
                 </ul>
             )}

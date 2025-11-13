@@ -1,16 +1,24 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 
 const app = express()
 const path = require('path')
 
-
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 //Uses the port provided by the env file or uses the default
-const port = process.env.port || 3000
+const port = process.env.PORT || 3000
+
+const mongoose = require('mongoose')
+
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Failed to connect to MongoDB:', err))
+
+const Restaurant = require('./models/Restaurant')
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`)
@@ -32,16 +40,15 @@ app.use(express.json())
 app.use(express.urlencoded())
 
 //Create a new restaurant
-app.post('/addRestaurant', (req, res) => {
-    let restaurantID = data.length + 1
-    const restaurantName = req.body.name
-    let newRestaurant = {
-        id: restaurantID,
-        name: restaurantName
+app.post('/addRestaurant', async (req, res) => {
+    try{
+        const {name} = req.body
+        const restaurant = new Restaurant({name})
+        await restaurant.save()
+        res.json({message: 'Restaurant added', restaurant})
+    } catch (err) {
+        res.status(500).json({error: 'Failed to add restaurant'})
     }
-    data.push(newRestaurant)
-    res.json({ message: 'Restaurant added successfully', restaurant: newRestaurant })
-    console.log(data)
 })
 
 //Serve the add restaurant page
@@ -50,8 +57,13 @@ app.get('/addRestaurant', (req, res) => {
 })
 
 //Read all restaurants
-app.get('/getRestaurants', (req, res) => {
-    res.json({ restaurants: data })
+app.get('/getRestaurants', async (req, res) => {
+    try{
+        const restaurants = await Restaurant.find()
+        res.json({restaurants})
+    } catch (err) {
+        res.status(500).json({error: 'Failed to fetch restaurants'})
+    }
 })
 
 app.get('/restaurants', (req, res) => {
@@ -70,13 +82,13 @@ app.get('/restaurant/:id', (req, res) => {
 })
 
 //Delete a restaurant by ID
-app.delete('/deleteRestaurant/:id', (req, res) => {
-    const id = parseInt(req.params.id)
-    const index = data.findIndex((restaurant) => restaurant.id === id)
-    if (index === -1) {
-        res.status(404).json({ error: 'Restaurant not found' })
-    } else {
-        const deleteRestaurant = data.splice(index, 1)
-        res.json(deleteRestaurant[0])
+app.delete('/deleteRestaurant/:id', async (req, res) => {
+    try{
+        const {id} = req.params
+        const deleted = await Restaurant.findByIdAndDelete(id)
+        if (!deleted) return res.status(404).json({error: 'Restaurant not found'})
+            res.json(deleted)
+    } catch (err) {
+        res.status(500).json({error: 'Failed to delete restaurant'})
     }
 })

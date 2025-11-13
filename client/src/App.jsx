@@ -1,8 +1,8 @@
-import {Routes, Route, Link} from 'react-router-dom'
-import Home from './pages/Home.jsx'
-import RestaurantMenu from './pages/RestaurantMenu.jsx'
-import RestaurantList from './pages/RestaurantList.jsx'
-import './App.css'
+import { Routes, Route, Link } from 'react-router-dom';
+import Home from './pages/Home';
+import RestaurantList from './pages/RestaurantList';
+import RestaurantMenu from './pages/RestaurantMenu';
+import './styling/App.css';
 
 function App() {
   return (
