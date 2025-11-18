@@ -26,7 +26,7 @@
             .catch(err => console.error('Failed to load restaurants', err))
 
         function deleteRestaurant(id) {
-            fetch(`deleteRestaurant/${id}`, {
+            fetch(`/deleteRestaurant/${id}`, {
                 method: 'DELETE'
             })
                 .then(response => {
@@ -43,7 +43,6 @@
         }
 
         function proccessData(data) {
-            console.log(data)
             restaurantList.innerHTML = ""
             data.restaurants.forEach(restaurant => {
                 const li = document.createElement('li')
@@ -51,12 +50,13 @@
 
                 const deleteBtn = document.createElement('button')
                 deleteBtn.innerText = "Delete"
-                deleteBtn.onclick = () => deleteRestaurant(restaurant.id)
+                deleteBtn.onclick = () => deleteRestaurant(restaurant._id)
 
                 li.appendChild(deleteBtn)
                 restaurantList.appendChild(li)
             })
         }
+
     </script>
 </body>
 

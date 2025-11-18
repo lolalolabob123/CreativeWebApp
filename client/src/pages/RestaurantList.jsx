@@ -5,18 +5,17 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 export default function RestaurantList() {
 
     const [restaurants, setRestaurants] = useState([])
-    function loadRestaurants() {
+
+    useEffect(() => {
         fetch('http://localhost:3000/getRestaurants')
             .then(res => res.json())
             .then(data => setRestaurants(data.restaurants))
-            .catch(err => console.error('Failed to load restaurants:', err))
-    }
-
-    useEffect(() => {
-        loadRestaurants()
+            .catch(err => console.error('Failed to load restaurants', err))
     }, [])
 
     function deleteRestaurant(id) {
+        setRestaurants(prev => prev.filter(r => r._id !== id))
+
         fetch(`http://localhost:3000/deleteRestaurant/${id}`, {
             method: 'DELETE'
         })
@@ -25,21 +24,31 @@ export default function RestaurantList() {
                 return response.json()
             })
             .then(() => loadRestaurants())
-            .catch(err => console.error(err))
+            .catch(err => {
+                console.error(err)
+                fetch('http://localhost:3000/getRestaurants')
+                    .then(res => res.json())
+                    .then(data => setRestaurants(data.restaurants))
+            })
     }
+
     return (
         <>
-            <h2>RestaurantList</h2>
+            <h2>Restaurant List</h2>
             {restaurants.length === 0 ? (
                 <p>No restaurants found</p>
             ) : (
                 <ul>
-                    {restaurants.map(r =>(
-                        <li key={r.id}>
+                    {restaurants.map(r => (
+                        <li key={r._id}>
                             {r.name}
-                            <button id='deleteBtn' onClick={() => deleteRestaurant(r.id)}
-                                ><RiDeleteBin6Line/></button>
-                            </li>
+                            <button
+                                id='deleteBtn'
+                                onClick={() => deleteRestaurant(r._id)}
+                            >
+                                <RiDeleteBin6Line />
+                            </button>
+                        </li>
                     ))}
                 </ul>
             )}
