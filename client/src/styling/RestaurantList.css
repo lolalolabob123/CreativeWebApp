@@ -1,9 +1,29 @@
-#deleteBtn {
-    margin-left: 10px;
-    background-color: red;
-    color: white;
-    border-radius: 20%;
-    width: auto;
-    height: auto;
-    padding: 5px;
+.restaurant-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.restaurant-item {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.restaurant-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.restaurant-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
 }
