@@ -5,6 +5,15 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 export default function RestaurantList() {
 
     const [restaurants, setRestaurants] = useState([])
+    const [open, setOpen] = useState(false)
+
+    function handleOpen(){
+        setOpen(true)
+    }
+
+    function handleClose(){
+        setOpen(false)
+    }
 
     useEffect(() => {
         fetchRestaurants()
@@ -47,7 +56,7 @@ export default function RestaurantList() {
                 <ul className="restaurant-list">
                     {restaurants.map(r => (
                         <li key={r._id} className="restaurant-item">
-                            {r.imnage && (
+                            {r.image && (
                                 <img
                                     src={`http://localhost:3000/uploads/${r.image}`}
                                     alt={r.name}
@@ -56,6 +65,10 @@ export default function RestaurantList() {
                             )}
                             <div className='restaurant-info'>
                                 <span className='restaurant-name'>{r.name}</span>
+                                <button onClick={handleOpen}>
+                                    View
+                                </button>
+                                <Modal isOpen={isOpen} onClose={handleClose}></Modal>
                                 <button
                                     id='deleteBtn'
                                     onClick={() => deleteRestaurant(r._id)}
