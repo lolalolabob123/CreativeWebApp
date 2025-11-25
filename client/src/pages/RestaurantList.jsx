@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import '../styling/RestaurantList.css'
 import { RiDeleteBin6Line } from "react-icons/ri";
+import Modal from './Modal'
 
 export default function RestaurantList() {
 
@@ -68,7 +69,9 @@ export default function RestaurantList() {
                                 <button onClick={handleOpen}>
                                     View
                                 </button>
-                                <Modal isOpen={isOpen} onClose={handleClose}></Modal>
+                                <Modal isOpen={open} onClose={handleClose}>
+                                    <></>
+                                </Modal>
                                 <button
                                     id='deleteBtn'
                                     onClick={() => deleteRestaurant(r._id)}
