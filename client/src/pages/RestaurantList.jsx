@@ -6,14 +6,14 @@ import Modal from './Modal'
 export default function RestaurantList() {
 
     const [restaurants, setRestaurants] = useState([])
-    const [open, setOpen] = useState(false)
+    const [selectedRestaurant, setSelectedRestaurant] = useState(null)
 
-    function handleOpen(){
-        setOpen(true)
+    function openModal(restaurant) {
+        setSelectedRestaurant(restaurant)
     }
 
-    function handleClose(){
-        setOpen(false)
+    function closeModal() {
+        setSelectedRestaurant(null)
     }
 
     useEffect(() => {
@@ -66,12 +66,9 @@ export default function RestaurantList() {
                             )}
                             <div className='restaurant-info'>
                                 <span className='restaurant-name'>{r.name}</span>
-                                <button onClick={handleOpen}>
+                                <button onClick={() => openModal(r)}>
                                     View
                                 </button>
-                                <Modal isOpen={open} onClose={handleClose}>
-                                    <></>
-                                </Modal>
                                 <button
                                     id='deleteBtn'
                                     onClick={() => deleteRestaurant(r._id)}
@@ -82,6 +79,15 @@ export default function RestaurantList() {
                     ))}
                 </ul>
             )}
+            <Modal isOpen={!!selectedRestaurant} onClose={closeModal}>
+                {selectedRestaurant && (
+                    <div className="modal-content">
+                        <h3>{selectedRestaurant.name}</h3>
+                        <p>ID: {selectedRestaurant._id}</p>
+                        <button onClick={closeModal}>Close</button>
+                        </div>
+                )}
+            </Modal>
         </>
     )
 }
