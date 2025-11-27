@@ -22,7 +22,7 @@ export default function RestaurantList() {
 
     const fetchRestaurants = async () => {
         try {
-            const res = await fetch('http://localhost:3000/getRestaurants')
+            const res = await fetch('/getRestaurants')
             const data = await res.json()
             setRestaurants(data.restaurants)
         } catch (err) {
@@ -34,7 +34,7 @@ export default function RestaurantList() {
         // Optimistically remove restaurant
         setRestaurants(prev => prev.filter(r => r._id !== id))
 
-        fetch(`http://localhost:3000/deleteRestaurant/${id}`, {
+        fetch(`/deleteRestaurant/${id}`, {
             method: 'DELETE'
         })
             .then(response => {
@@ -72,22 +72,33 @@ export default function RestaurantList() {
                                 <button
                                     id='deleteBtn'
                                     onClick={() => deleteRestaurant(r._id)}
-                                >  
+                                >
+                                    <RiDeleteBin6Line style={{ color: 'white', size: 20 }} />
                                 </button>
                             </div>
                         </li>
                     ))}
                 </ul>
             )}
-            <Modal isOpen={!!selectedRestaurant} onClose={closeModal}>
-                {selectedRestaurant && (
-                    <div className="modal-content">
-                        <h3>{selectedRestaurant.name}</h3>
-                        <p>ID: {selectedRestaurant._id}</p>
-                        <button onClick={closeModal}>Close</button>
-                        </div>
-                )}
-            </Modal>
+            <Modal
+                isOpen={!!selectedRestaurant}
+                onClose={closeModal}
+                name={selectedRestaurant?.name}
+                image={selectedRestaurant?.image}
+                restaurantId={selectedRestaurant?._id}
+                onImageUpdate={(newImage) => {
+                    setRestaurants(prev =>
+                        prev.map(r => r._id === selectedRestaurant._id ? { ...r, image: newImage } : r)
+                    );
+                    setSelectedRestaurant(prev => prev ? { ...prev, image: newImage }: prev);
+                }}
+                onNameUpdate={(newName) => {
+                    setRestaurants(prev => 
+                        prev.map(r => r._id === selectedRestaurant._id ? {...r, name: newName} : r)
+                    )
+                    setSelectedRestaurant(prev => prev ? { ...prev, name: newName }: prev);
+                }}
+            />
         </>
     )
 }

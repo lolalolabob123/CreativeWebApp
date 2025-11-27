@@ -75,3 +75,47 @@ app.delete('/deleteRestaurant/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete restaurant' })
     }
 })
+
+app.post('/updateRestaurantImage/:id', upload.single('image'), async (req, res) => {
+try {
+const { id } = req.params;
+const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+        return res.status(404).json({ error: 'Restaurant not found' });
+    }
+
+    // Optionally, delete the old image file here
+    restaurant.image = file.filename;
+    await restaurant.save();
+
+    res.json({ message: 'Image updated', image: file.filename });
+} catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update image' });
+}
+
+});
+
+app.post('/updateRestaurantName/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
+
+        restaurant.name = name;
+        await restaurant.save();
+
+        res.json({ name: restaurant.name });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update name' });
+    }
+});

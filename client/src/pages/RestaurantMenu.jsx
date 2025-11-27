@@ -14,7 +14,7 @@ export default function RestaurantMenu() {
         formData.append('name', name)
         if (image) formData.append('image', image)
 
-        const response = await fetch('http://localhost:3000/addRestaurant', {
+        const response = await fetch('/addRestaurant', {
             method: 'POST',
             body: formData
         })
