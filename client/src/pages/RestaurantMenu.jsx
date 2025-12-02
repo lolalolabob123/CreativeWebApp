@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import '../styling/RestaurantMenu.css'
 
 export default function RestaurantMenu() {
     const [name, setName] = useState('')
@@ -43,6 +44,7 @@ export default function RestaurantMenu() {
             <label>Image</label>
             <input
                 type="file"
+                className='custom-file-input'
                 accept="image/*"
                 onChange={(e) => setImage(e.target.files[0])}
             />
