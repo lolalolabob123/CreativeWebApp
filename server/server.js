@@ -46,17 +46,22 @@ const port = process.env.PORT || 3000
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
     app.listen(port, () => console.log(`Server running on port ${port}`))
-})
+}).catch(err => console.error(err))
 
 const Restaurant = require('./models/Restaurant')
 
 // Create a new restaurant
 app.post('/addRestaurant', upload.single('image'), async (req, res) => {
     try {
-        const { name } = req.body
-        const image = req.file ? req.file.filename : null
+        const { name, donationGoal } = req.body
+        if (!name) return res.status(400).json({ error: 'Name is required' })
 
-        const restaurant = new Restaurant({ name, image })
+        const restaurant = new Restaurant({
+            name,
+            image: req.file ? req.file.filename : null,
+            donationReached: 0,
+            donationGoal: donationGoal ? Number(donationGoal) : 1000
+        })
         await restaurant.save()
         res.json({ message: 'Restaurant added', restaurant })
     } catch (err) {
@@ -91,28 +96,28 @@ app.delete('/deleteRestaurant/:id', async (req, res) => {
 })
 
 app.post('/updateRestaurantImage/:id', upload.single('image'), async (req, res) => {
-try {
-const { id } = req.params;
-const file = req.file;
+    try {
+        const { id } = req.params;
+        const file = req.file;
 
-    if (!file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        if (!file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ error: 'Restaurant not found' });
+        }
+
+        // Optionally, delete the old image file here
+        restaurant.image = file.filename;
+        await restaurant.save();
+
+        res.json({ message: 'Image updated', image: file.filename });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update image' });
     }
-
-    const restaurant = await Restaurant.findById(id);
-    if (!restaurant) {
-        return res.status(404).json({ error: 'Restaurant not found' });
-    }
-
-    // Optionally, delete the old image file here
-    restaurant.image = file.filename;
-    await restaurant.save();
-
-    res.json({ message: 'Image updated', image: file.filename });
-} catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update image' });
-}
 
 });
 
@@ -148,10 +153,10 @@ app.post('/register', async (req, res) => {
         isBusiness
     )
 
-    if (success){
-        res.json({success: true})
-    } else{
-        res.status(400).json({success: false, message: 'Registration Failed'})
+    if (success) {
+        res.json({ success: true })
+    } else {
+        res.status(400).json({ success: false, message: 'Registration Failed' })
     }
 })
 
@@ -165,24 +170,60 @@ app.post('/login', async (req, res) => {
         req.session.username = user.username
         req.session.business = user.business
 
-        res.json({success: true})
-    } else{
-        res.status(400).json({success: false, message: 'Login Failed'})
+        res.json({ success: true })
+    } else {
+        res.status(400).json({ success: false, message: 'Login Failed' })
     }
 })
 
 app.get('/user', (req, res) => {
     if (req.session.username) {
-        res.json({username: req.session.username, business: req.session.business})
-    } else{
+        res.json({ username: req.session.username, business: req.session.business })
+    } else {
         res.json({})
     }
 })
 
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
-        if (err) return res.status(500).json({success: false, message: 'Logout failed'})
-            res.clearCookie('connect.sid')
-        res.json({success: true})
-    }) 
+        if (err) return res.status(500).json({ success: false, message: 'Logout failed' })
+        res.clearCookie('connect.sid')
+        res.json({ success: true })
+    })
+})
+
+app.post('/donate/:id', async (req, res) => {
+    try {
+        const { amount } = req.body
+        const { id } = req.params
+
+        if (!req.session.username) {
+            return res.status(401).json({ error: 'Not Logged In' })
+        }
+
+        if (req.session.business === true) {
+            return res.status(403).json({ error: 'Businesses cannot donate' })
+        }
+
+        const restaurant = await Restaurant.findById(id)
+        if (!restaurant) {
+            return res.status(404).json({ error: 'Restaurant not found' })
+        }
+
+        restaurant.donationReached = restaurant.donationReached || 0
+        restaurant.donationGoal = restaurant.donationGoal || 1000
+
+        const numericAmount = Number(amount)
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            return res.status(400).json({ error: 'Invalid donation amount' })
+        }
+
+        restaurant.donationReached += numericAmount
+        await restaurant.save()
+
+        res.json({ success: true, restaurant})
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Donation failed' })
+    }
 })

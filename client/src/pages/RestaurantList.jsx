@@ -4,7 +4,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import Modal from './Modal'
 
 export default function RestaurantList() {
-
+    const [user, setUser] = useState(null)
     const [restaurants, setRestaurants] = useState([])
     const [selectedRestaurant, setSelectedRestaurant] = useState(null)
 
@@ -34,7 +34,8 @@ export default function RestaurantList() {
         setRestaurants(prev => prev.filter(r => r._id !== id))
 
         fetch(`/deleteRestaurant/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
         })
             .then(response => {
                 if (!response.ok) throw new Error('Failed to delete')
@@ -46,6 +47,46 @@ export default function RestaurantList() {
                 fetchRestaurants()
             })
     }
+
+    useEffect(() => {
+        fetch('/user', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => setUser(data))
+    }, [])
+
+async function donateToRestaurant(id) {
+    const amount = prompt('Enter donation amount:')
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+        alert('Invalid amount')
+        return
+    }
+
+    const res = await fetch(`/donate/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ amount: Number(amount) })
+    })
+
+    const data = await res.json()
+
+    if (res.ok && data.restaurant) {
+        setRestaurants(prev =>
+            prev.map(r => r._id === id
+                ? { 
+                    ...r,
+                    donationReached: data.restaurant.donationReached,
+                    donationGoal: data.restaurant.donationGoal
+                }
+                : r
+            )
+        )
+        alert('Thank you for your donation!')
+    } else {
+        alert(data.error || 'Donation failed')
+    }
+}
 
     return (
         <>
@@ -65,6 +106,22 @@ export default function RestaurantList() {
                             )}
                             <div className='restaurant-info'>
                                 <span className='restaurant-name'>{r.name}</span>
+                                <div className='progress-wrapper'>
+                                    <span className='progress-text'>${r.donationReached} / ${r.donationGoal}</span>
+                                    <div className='progress-container'>
+                                        <div
+                                            className='progress-bar'
+                                            style={{ width: `${Math.min((r.donationReached / r.donationGoal) * 100, 100)}%` }}
+                                        >
+                                        </div>
+                                    </div>
+                                </div>
+                                {user && user.username && !user.business && (
+                                    <button className='donate-btn'
+                                        onClick={() => donateToRestaurant(r._id)}>
+                                        Donate
+                                    </button>
+                                )}
                                 <button onClick={() => openModal(r)}>
                                     View
                                 </button>
@@ -89,14 +146,14 @@ export default function RestaurantList() {
                     setRestaurants(prev =>
                         prev.map(r => r._id === selectedRestaurant._id ? { ...r, image: newImage } : r)
                     );
-                    setSelectedRestaurant(prev => prev ? { ...prev, image: newImage }: prev);
+                    setSelectedRestaurant(prev => prev ? { ...prev, image: newImage } : prev);
                     alert('Image Updated')
                 }}
                 onNameUpdate={(newName) => {
-                    setRestaurants(prev => 
-                        prev.map(r => r._id === selectedRestaurant._id ? {...r, name: newName} : r)
+                    setRestaurants(prev =>
+                        prev.map(r => r._id === selectedRestaurant._id ? { ...r, name: newName } : r)
                     )
-                    setSelectedRestaurant(prev => prev ? { ...prev, name: newName }: prev);
+                    setSelectedRestaurant(prev => prev ? { ...prev, name: newName } : prev);
                     alert('Name Updated')
                 }}
             />
