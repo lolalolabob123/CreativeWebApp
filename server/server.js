@@ -4,10 +4,24 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const path = require('path')
 const multer = require('multer')
+const userModel = require('./models/Users')
+const session = require('express-session')
 
 const app = express()
 
-app.use(cors())
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "secret123",
+        resave: false,
+        saveUninitialized: false,
+        cookie: { secure: false },
+    })
+)
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -119,3 +133,56 @@ app.post('/updateRestaurantName/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to update name' });
     }
 });
+
+// app.get('/register', (req, res) => {
+//     res.render('pages/Register')
+// })
+
+app.post('/register', async (req, res) => {
+    const isBusiness = req.body.business === "on"
+    const success = await userModel.addUser(
+        req.body.firstName,
+        req.body.lastName,
+        req.body.username,
+        req.body.password,
+        isBusiness
+    )
+
+    if (success){
+        res.json({success: true})
+    } else{
+        res.status(400).json({success: false, message: 'Registration Failed'})
+    }
+})
+
+// app.get('/login', (req, res) => {
+//     res.render('pages/Login')
+// })
+
+app.post('/login', async (req, res) => {
+    const user = await userModel.checkUser(req.body.username, req.body.password)
+    if (user) {
+        req.session.username = user.username
+        req.session.business = user.business
+
+        res.json({success: true})
+    } else{
+        res.status(400).json({success: false, message: 'Login Failed'})
+    }
+})
+
+app.get('/user', (req, res) => {
+    if (req.session.username) {
+        res.json({username: req.session.username, business: req.session.business})
+    } else{
+        res.json({})
+    }
+})
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) return res.status(500).json({success: false, message: 'Logout failed'})
+            res.clearCookie('connect.sid')
+        res.json({success: true})
+    }) 
+})

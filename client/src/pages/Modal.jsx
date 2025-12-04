@@ -95,7 +95,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
                     type="text"
                     value={restaurantName}
                     onChange={(e) => setRestaurantName(e.target.value)}
-                    style={{ width: '100%', marginBottom: '10px', padding: '5px' }}
+                    style={{ width: '80%', marginBottom: '10px', padding: '5px', marginRight: '100%'}}
                 />
                 <button onClick={handleNameSave}>Save Name</button>
 

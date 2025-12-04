@@ -31,7 +31,6 @@ export default function RestaurantList() {
     }
 
     function deleteRestaurant(id) {
-        // Optimistically remove restaurant
         setRestaurants(prev => prev.filter(r => r._id !== id))
 
         fetch(`/deleteRestaurant/${id}`, {
@@ -59,7 +58,7 @@ export default function RestaurantList() {
                         <li key={r._id} className="restaurant-item">
                             {r.image && (
                                 <img
-                                    src={`http://localhost:3000/uploads/${r.image}`}
+                                    src={`/uploads/${r.image}`}
                                     alt={r.name}
                                     className="restaurant-image"
                                 />
@@ -91,12 +90,14 @@ export default function RestaurantList() {
                         prev.map(r => r._id === selectedRestaurant._id ? { ...r, image: newImage } : r)
                     );
                     setSelectedRestaurant(prev => prev ? { ...prev, image: newImage }: prev);
+                    alert('Image Updated')
                 }}
                 onNameUpdate={(newName) => {
                     setRestaurants(prev => 
                         prev.map(r => r._id === selectedRestaurant._id ? {...r, name: newName} : r)
                     )
                     setSelectedRestaurant(prev => prev ? { ...prev, name: newName }: prev);
+                    alert('Name Updated')
                 }}
             />
         </>
