@@ -62,7 +62,7 @@ async function donateToRestaurant(id) {
         return
     }
 
-    const res = await fetch(`/donate/${id}`, {
+    const res = await fetch(`http://localhost:3000/donate/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -73,14 +73,11 @@ async function donateToRestaurant(id) {
 
     if (res.ok && data.restaurant) {
         setRestaurants(prev =>
-            prev.map(r => r._id === id
-                ? { 
-                    ...r,
-                    donationReached: data.restaurant.donationReached,
-                    donationGoal: data.restaurant.donationGoal
-                }
-                : r
-            )
+            prev.map(r => r._id === data.restaurant._id ? data.restaurant : r)
+        )
+
+        setSelectedRestaurant(prev =>
+            prev && prev._id === data.restaurant._id ? data.restaurant : prev
         )
         alert('Thank you for your donation!')
     } else {

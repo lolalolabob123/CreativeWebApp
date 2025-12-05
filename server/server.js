@@ -197,6 +197,10 @@ app.post('/donate/:id', async (req, res) => {
         const { amount } = req.body
         const { id } = req.params
 
+        console.log('Donate request received')
+        console.log('User session:', req.session)
+        console.log('Amount:', amount)
+
         if (!req.session.username) {
             return res.status(401).json({ error: 'Not Logged In' })
         }
@@ -221,7 +225,8 @@ app.post('/donate/:id', async (req, res) => {
         restaurant.donationReached += numericAmount
         await restaurant.save()
 
-        res.json({ success: true, restaurant})
+        res.status(200).json({ success: true, restaurant })
+
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Donation failed' })
