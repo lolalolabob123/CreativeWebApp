@@ -232,3 +232,45 @@ app.post('/donate/:id', async (req, res) => {
         res.status(500).json({ error: 'Donation failed' })
     }
 })
+
+// Get menu items for a restaurant
+app.get('/getMenuItems/:id', async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.params.id);
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
+        res.json({ menuItems: restaurant.menu || [] });
+    } catch(err) {
+        res.status(500).json({ error: 'Failed to fetch menu' });
+    }
+});
+
+// Add menu item
+app.post('/addMenuItem/:id', async (req, res) => {
+    try {
+        const { name, price } = req.body;
+        const restaurant = await Restaurant.findById(req.params.id);
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
+
+        restaurant.menu = restaurant.menu || [];
+        restaurant.menu.push({ _id: new mongoose.Types.ObjectId(), name, price });
+        await restaurant.save();
+        res.json({ menuItems: restaurant.menu });
+    } catch(err) {
+        res.status(500).json({ error: 'Failed to add menu item' });
+    }
+});
+
+// Delete menu item
+app.delete('/deleteMenuItem/:id/:itemId', async (req, res) => {
+    try {
+        const { id, itemId } = req.params;
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
+
+        restaurant.menu = restaurant.menu.filter(item => item._id.toString() !== itemId);
+        await restaurant.save();
+        res.json({ menuItems: restaurant.menu });
+    } catch(err) {
+        res.status(500).json({ error: 'Failed to delete menu item' });
+    }
+});
