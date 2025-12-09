@@ -88,7 +88,7 @@ export default function RestaurantList() {
     return (
         <>
             <h2>Restaurant List</h2>
-            {restaurants.length === 0 ? (
+            {!Array.isArray(restaurants) || restaurants.length === 0 ? (
                 <p>No restaurants found</p>
             ) : (
                 <ul className="restaurant-list">

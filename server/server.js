@@ -4,7 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const path = require('path')
 const multer = require('multer')
-const userModel = require('./models/Users')
+const {User, addUser, checkUser, getUserByUsername, updateUser} = require('./models/Users')
 const session = require('express-session')
 
 const app = express()
@@ -52,26 +52,35 @@ const Restaurant = require('./models/Restaurant')
 
 // Create a new restaurant
 app.post('/addRestaurant', upload.single('image'), async (req, res) => {
-
-    console.log("hit");
-
     try {
         const { name } = req.body
-        console.log(name);
 
-        if (!name) return res.status(400).json({ error: 'Name is required' })
+        if (!name) {
+            return res.status(400).json({ error: 'Name is required' })
+        }
+
+        if (!req.session.username) {
+            return res.status(401).json({ error: 'Not Logged In' })
+        }
+
+        const owner = await User.findOne({ username: req.session.username })
+        if (!owner) {
+            return res.status(401).json({ error: 'User not found' })
+        }
 
         const restaurant = new Restaurant({
             name,
             image: req.file ? req.file.filename : null,
             donationReached: 0,
-            donationGoal: donationGoal ? Number(donationGoal) : 1000,
-            owner: req.user._id
+            donationGoal: 1000,
+            owner: owner._id
         })
 
         await restaurant.save()
+
         res.json({ message: 'Restaurant added', restaurant })
     } catch (err) {
+        console.error(err)
         res.status(500).json({ error: 'Failed to add restaurant' })
     }
 })
@@ -82,29 +91,42 @@ app.get('/getRestaurants', async (req, res) => {
         const restaurants = await Restaurant.find().populate('owner', 'username business')
         res.json({ restaurants })
     } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch restaurants' })
+        console.error('Error fetching restaurants:', err)
+        res.status(500).json({ error: 'Failed to fetch restaurants', details: err.message })
     }
 })
 
 // Delete restaurant by ID
 app.delete('/deleteRestaurant/:id', async (req, res) => {
     try {
-        const { id } = req.params
-        const restaurant = await Restaurant.findByIdAndDelete(id)
+        const { id } = req.params;
 
+        if (!req.session.username) {
+            return res.status(401).json({ error: 'Not Logged In' });
+        }
+
+        const owner = await User.findOne({ username: req.session.username });
+        if (!owner) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        const restaurant = await Restaurant.findById(id);
         if (!restaurant) {
-            return res.status(404).json({ error: 'Restaurant not found' })
+            return res.status(404).json({ error: 'Restaurant not found' });
         }
 
-        if (restaurant.owner.toString() !== req.user._id.toString()) {
-            req.status(403).json({error: 'Unauthorised: You do not own this restaurant'})
+        if (restaurant.owner.toString() !== owner._id.toString()) {
+            return res.status(403).json({ error: 'Unauthorised: You do not own this restaurant' });
         }
 
-        res.json({ message: 'Restaurant deleted', restaurant })
+        await restaurant.deleteOne();
+
+        res.json({ message: 'Restaurant deleted', restaurant });
+
     } catch (err) {
-        res.status(500).json({ error: 'Failed to delete restaurant' })
+        res.status(500).json({ error: 'Failed to delete restaurant' });
     }
-})
+});
 
 app.post('/updateRestaurantImage/:id', upload.single('image'), async (req, res) => {
     try {
@@ -151,7 +173,8 @@ app.post('/updateRestaurantName/:id', async (req, res) => {
 
 app.post('/register', async (req, res) => {
     const isBusiness = req.body.business === "on"
-    const success = await userModel.addUser(
+
+    const success = await addUser(
         req.body.firstName,
         req.body.lastName,
         req.body.username,
@@ -166,24 +189,33 @@ app.post('/register', async (req, res) => {
     }
 })
 
+
 app.post('/login', async (req, res) => {
-    const user = await userModel.checkUser(req.body.username, req.body.password)
+    const user = await checkUser(req.body.username, req.body.password)
+
     if (user) {
         req.session.username = user.username
         req.session.business = user.business
-
         res.json({ success: true })
     } else {
         res.status(400).json({ success: false, message: 'Login Failed' })
     }
 })
 
-app.get('/user', (req, res) => {
+
+app.get('/user', async (req, res) => {
     if (req.session.username) {
-        res.json({ username: req.session.username, business: req.session.business })
-    } else {
-        res.json({})
+        const user = await getUserByUsername(req.session.username)
+        if (user) {
+            res.json({
+                _id: user._id,
+                username: user.username,
+                business: user.business
+            })
+            return
+        }
     }
+    res.json({})
 })
 
 app.post('/logout', (req, res) => {
