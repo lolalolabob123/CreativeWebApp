@@ -54,36 +54,36 @@ export default function RestaurantList() {
             .then(data => setUser(data))
     }, [])
 
-async function donateToRestaurant(id) {
-    const amount = prompt('Enter donation amount:')
+    async function donateToRestaurant(id) {
+        const amount = prompt('Enter donation amount:')
 
-    if (!amount || isNaN(amount) || amount <= 0) {
-        alert('Invalid amount')
-        return
+        if (!amount || isNaN(amount) || amount <= 0) {
+            alert('Invalid amount')
+            return
+        }
+
+        const res = await fetch(`http://localhost:3000/donate/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ amount: Number(amount) })
+        })
+
+        const data = await res.json()
+
+        if (res.ok && data.restaurant) {
+            setRestaurants(prev =>
+                prev.map(r => r._id === data.restaurant._id ? data.restaurant : r)
+            )
+
+            setSelectedRestaurant(prev =>
+                prev && prev._id === data.restaurant._id ? data.restaurant : prev
+            )
+            alert('Thank you for your donation!')
+        } else {
+            alert(data.error || 'Donation failed')
+        }
     }
-
-    const res = await fetch(`http://localhost:3000/donate/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ amount: Number(amount) })
-    })
-
-    const data = await res.json()
-
-    if (res.ok && data.restaurant) {
-        setRestaurants(prev =>
-            prev.map(r => r._id === data.restaurant._id ? data.restaurant : r)
-        )
-
-        setSelectedRestaurant(prev =>
-            prev && prev._id === data.restaurant._id ? data.restaurant : prev
-        )
-        alert('Thank you for your donation!')
-    } else {
-        alert(data.error || 'Donation failed')
-    }
-}
 
     return (
         <>
@@ -119,15 +119,19 @@ async function donateToRestaurant(id) {
                                         Donate
                                     </button>
                                 )}
-                                <button onClick={() => openModal(r)}>
-                                    View
-                                </button>
-                                <button
+                                {user && r.owner?._id === user._id && (
+                                    <button onClick={() => openModal(r)}>
+                                        View
+                                    </button>
+                                )}
+                                {user && r.owner?._id === user._id && (
+                                                                    <button
                                     id='deleteBtn'
                                     onClick={() => deleteRestaurant(r._id)}
                                 >
                                     <RiDeleteBin6Line style={{ color: 'white', size: 20 }} />
                                 </button>
+                                )}
                             </div>
                         </li>
                     ))}
@@ -139,6 +143,7 @@ async function donateToRestaurant(id) {
                 name={selectedRestaurant?.name}
                 image={selectedRestaurant?.image}
                 restaurantId={selectedRestaurant?._id}
+                canEdit={selectedRestaurant?.owner._id === user?._id}
                 onImageUpdate={(newImage) => {
                     setRestaurants(prev =>
                         prev.map(r => r._id === selectedRestaurant._id ? { ...r, image: newImage } : r)

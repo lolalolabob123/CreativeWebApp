@@ -15,17 +15,19 @@ export default function RestaurantMenu() {
         formData.append('name', name)
         if (image) formData.append('image', image)
 
-        const response = await fetch('/addRestaurant', {
+        const response = await fetch('http://localhost:3000/addRestaurant', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include',
         })
 
-        if (response.ok) {
-            const data = await response.json()
+        const data = await response.json()
+
+        if (response.ok && data.restaurant){
             setMessage(`Added Restaurant: ${data.restaurant.name}`)
             navigate('/restaurants')
-        } else {
-            setMessage('Failed to add restaurant')
+        } else{
+            setMessage(data.error || 'Failed to add restaurant')
         }
     }
 

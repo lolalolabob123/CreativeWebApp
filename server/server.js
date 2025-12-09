@@ -52,16 +52,23 @@ const Restaurant = require('./models/Restaurant')
 
 // Create a new restaurant
 app.post('/addRestaurant', upload.single('image'), async (req, res) => {
+
+    console.log("hit");
+
     try {
-        const { name, donationGoal } = req.body
+        const { name } = req.body
+        console.log(name);
+
         if (!name) return res.status(400).json({ error: 'Name is required' })
 
         const restaurant = new Restaurant({
             name,
             image: req.file ? req.file.filename : null,
             donationReached: 0,
-            donationGoal: donationGoal ? Number(donationGoal) : 1000
+            donationGoal: donationGoal ? Number(donationGoal) : 1000,
+            owner: req.user._id
         })
+
         await restaurant.save()
         res.json({ message: 'Restaurant added', restaurant })
     } catch (err) {
@@ -72,7 +79,7 @@ app.post('/addRestaurant', upload.single('image'), async (req, res) => {
 // Read all restaurants
 app.get('/getRestaurants', async (req, res) => {
     try {
-        const restaurants = await Restaurant.find()
+        const restaurants = await Restaurant.find().populate('owner', 'username business')
         res.json({ restaurants })
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch restaurants' })
@@ -83,13 +90,17 @@ app.get('/getRestaurants', async (req, res) => {
 app.delete('/deleteRestaurant/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const deleted = await Restaurant.findByIdAndDelete(id)
+        const restaurant = await Restaurant.findByIdAndDelete(id)
 
-        if (!deleted) {
+        if (!restaurant) {
             return res.status(404).json({ error: 'Restaurant not found' })
         }
 
-        res.json({ message: 'Restaurant deleted', deleted })
+        if (restaurant.owner.toString() !== req.user._id.toString()) {
+            req.status(403).json({error: 'Unauthorised: You do not own this restaurant'})
+        }
+
+        res.json({ message: 'Restaurant deleted', restaurant })
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete restaurant' })
     }
@@ -109,7 +120,6 @@ app.post('/updateRestaurantImage/:id', upload.single('image'), async (req, res) 
             return res.status(404).json({ error: 'Restaurant not found' });
         }
 
-        // Optionally, delete the old image file here
         restaurant.image = file.filename;
         await restaurant.save();
 
@@ -139,10 +149,6 @@ app.post('/updateRestaurantName/:id', async (req, res) => {
     }
 });
 
-// app.get('/register', (req, res) => {
-//     res.render('pages/Register')
-// })
-
 app.post('/register', async (req, res) => {
     const isBusiness = req.body.business === "on"
     const success = await userModel.addUser(
@@ -159,10 +165,6 @@ app.post('/register', async (req, res) => {
         res.status(400).json({ success: false, message: 'Registration Failed' })
     }
 })
-
-// app.get('/login', (req, res) => {
-//     res.render('pages/Login')
-// })
 
 app.post('/login', async (req, res) => {
     const user = await userModel.checkUser(req.body.username, req.body.password)

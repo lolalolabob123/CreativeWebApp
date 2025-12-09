@@ -8,8 +8,7 @@ const menuItemSchema = new mongoose.Schema({
 const restaurantSchema = new mongoose.Schema({
     name: { type: String, required: true },
     image: { type: String },
-    donationGoal: { type: Number, default: 100 },
-    donationReached: { type: Number, default: 10 },
+   
     menu: [menuItemSchema]
 });
 
