@@ -81,7 +81,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
     const addMenuItem = async () => {
         if (!newMenuItem.name || !newMenuItem.price) return alert('Please fill in all fields');
         try {
-            const res = await fetch(`/addMenuItem/${restaurantId}`, {
+            const res = await fetch(`http://localhost:3000/addMenuItem/${restaurantId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newMenuItem)
