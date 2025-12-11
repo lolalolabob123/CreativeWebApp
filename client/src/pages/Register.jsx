@@ -55,7 +55,7 @@ export default function Register() {
                 <input type='password' id='password' value={password} onChange={(e) => setPassword(e.target.value)}/><br />
 
                 <label>Business</label>
-                <input type='checkbox' id='business' value={business} onChange={(e) => setBusiness(e.target.checked)}/><br />
+                <input type='checkbox' id='business' checked={business} onChange={(e) => setBusiness(e.target.checked)}/><br />
 
                 <input type='submit' value='Register' />
             </form>
