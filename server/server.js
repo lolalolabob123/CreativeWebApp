@@ -4,7 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const path = require('path')
 const multer = require('multer')
-const {User, addUser, checkUser, getUserByUsername, updateUser} = require('./models/Users')
+const {User, addUser, checkUser, getUserByUsername, updateUser, addToCart} = require('./models/Users')
 const session = require('express-session')
 
 const app = express()
@@ -172,7 +172,7 @@ app.post('/updateRestaurantName/:id', async (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    const isBusiness = req.body.business === "on"
+    const isBusiness = req.body.business === "on" || req.body.business === true
 
     const success = await addUser(
         req.body.firstName,
@@ -308,3 +308,17 @@ app.delete('/deleteMenuItem/:id/:itemId', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete menu item' });
     }
 });
+
+app.post('/addToCart', async (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({error: 'Not logged in'})
+    }
+
+    const result = await addToCart(req.session.username, req.body)
+
+    if (!result) {
+        return res.status(400).json({error: 'Failed to add to cart'})
+    }
+
+    res.json({success: true, cart: result})
+})

@@ -93,7 +93,13 @@ export default function RestaurantList() {
             ) : (
                 <ul className="restaurant-list">
                     {restaurants.map(r => (
-                        <li key={r._id} className="restaurant-item">
+                        <li key={r._id} className="restaurant-item"
+                        onClick={() => {
+                            if (user && user.username && !user.business){
+                                openModal(r)
+                            }
+                        }}
+                        >
                             {r.image && (
                                 <img
                                     src={`/uploads/${r.image}`}
@@ -114,23 +120,19 @@ export default function RestaurantList() {
                                     </div>
                                 </div>
                                 {user && user.username && !user.business && (
-                                    <button className='donate-btn'
-                                        onClick={() => donateToRestaurant(r._id)}>
-                                        Donate
-                                    </button>
+                                    <div className="action-buttons">
+                                        <button className='donate-btn' onClick={() => donateToRestaurant(r._id)}>
+                                            Donate
+                                        </button>
+                                    </div>
                                 )}
                                 {user && r.owner?._id === user._id && (
-                                    <button onClick={() => openModal(r)}>
-                                        View
-                                    </button>
-                                )}
-                                {user && r.owner?._id === user._id && (
-                                                                    <button
-                                    id='deleteBtn'
-                                    onClick={() => deleteRestaurant(r._id)}
-                                >
-                                    <RiDeleteBin6Line style={{ color: 'white', size: 20 }} />
-                                </button>
+                                    <div className="action-buttons">
+                                        <button onClick={() => openModal(r)}>View</button>
+                                        <button className='delete-btn' onClick={() => deleteRestaurant(r._id)}>
+                                            <RiDeleteBin6Line color="white" size={20} />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </li>
