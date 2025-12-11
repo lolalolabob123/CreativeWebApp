@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import '../styling/Modal.css'
 
-const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNameUpdate, canEdit}) => {
+const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNameUpdate, canEdit }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState('');
     const [restaurantName, setRestaurantName] = useState('');
@@ -89,7 +89,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
 
     const deleteMenuItem = async (itemId) => {
         try {
-            const res = await fetch(`/deleteMenuItem/${restaurantId}/${itemId}`, { method: 'DELETE' });
+            const res = await fetch(`http://localhost:3000/deleteMenuItem/${restaurantId}/${itemId}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete menu item');
             const data = await res.json();
             setMenuItems(data.menuItems);
@@ -98,14 +98,14 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
         }
     }
 
-    const addToCart  = async (item) => {
+    const addToCart = async (item) => {
         try {
-            const res = await fetch('/addToCart', {
+            const res = await fetch('http://localhost:3000/addToCart', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
-                    itemId: item_id,
+                    itemId: item._id,
                     name: item.name,
                     price: item.price
                 })
@@ -118,7 +118,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
             }
 
             alert('Item added to cart')
-        } catch(err) {
+        } catch (err) {
             console.error(err)
             alert('Could not add to cart')
         }
@@ -153,10 +153,26 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div style={{ display: 'flex', marginBottom: '15px' }}>
-                    <button onClick={() => setActiveTab('info')} style={{ flex: 1 }}>Info</button>
-                    <button onClick={() => setActiveTab('menu')} style={{ flex: 1 }}>Menu</button>
+                <div className="modal-header">
+                    <div className="modal-tabs">
+                        <button
+                            className={`modal-tab ${activeTab === 'info' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('info')}
+                        >
+                            Info
+                        </button>
+
+                        <button
+                            className={`modal-tab ${activeTab === 'menu' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('menu')}
+                        >
+                            Menu
+                        </button>
+                    </div>
+
+                    <button className="modal-close" onClick={onClose}>✕</button>
                 </div>
+
 
                 {activeTab === 'info' && (
                     <>
@@ -225,7 +241,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
                     </>
                 )}
 
-                <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px' }}>Close</button>
+                <button className="modal-close" onClick={onClose}>✕</button>
             </div>
         </div>
     );

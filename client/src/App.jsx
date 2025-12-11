@@ -1,5 +1,5 @@
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState} from 'react';
 import { UserContext } from './contexts/UserContext'
 import Home from './pages/Home';
 import RestaurantList from './pages/RestaurantList';
@@ -12,6 +12,8 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, setUser, loading } = useContext(UserContext);
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const hideNavRoutes = ['/register', '/login'];
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
@@ -32,7 +34,20 @@ function App() {
             </>
           )}
           {user && (
+            <>
             <button
+              onClick={() => setIsCartOpen(true)}
+              style={{
+                background: 'white',
+                color: 'black',
+                borderRadius: '6px',
+                padding: '5px 10px',
+                cursor: 'pointer'
+              }}
+            >
+              Cart
+            </button>
+                        <button
               onClick={async () => {
                 const res = await fetch('http://localhost:3000/logout', {
                   method: 'POST',
@@ -49,8 +64,41 @@ function App() {
             >
               Logout
             </button>
+            </>
           )}
         </nav>
+      )}
+
+      {isCartOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center'
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '10px',
+              width: '300px'
+            }}
+          >
+            <h3>Your Cart</h3>
+
+            <p>No items yet.</p>
+
+            <button
+              style={{ marginTop: '20px', padding: '6px 12px' }}
+              onClick={() => setIsCartOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       <Routes>
