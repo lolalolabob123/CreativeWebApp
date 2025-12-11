@@ -56,13 +56,15 @@ async function addToCart(username, item){
 
     if (!user) return null
 
+    const itemId = item.itemId || item_id
+
     const existingItem = user.cart.find(i => i.itemId.toString() === item.itemId)
 
     if (existingItem) {
         existingItem.quantity += 1
     } else{
         user.cart.push({
-            itemId: item.itemId,
+            itemId: itemId,
             name: item.name,
             price: item.price,
             quantity: 1
