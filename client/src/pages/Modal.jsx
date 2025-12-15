@@ -241,7 +241,7 @@ const Modal = ({ isOpen, onClose, name, image, restaurantId, onImageUpdate, onNa
                     </>
                 )}
 
-                <button className="modal-close" onClick={onClose}>✕</button>
+                {/* <button className="modal-close" onClick={onClose}>✕</button> */}
             </div>
         </div>
     );
