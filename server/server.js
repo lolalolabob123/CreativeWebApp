@@ -4,7 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const path = require('path')
 const multer = require('multer')
-const {User, addUser, checkUser, getUserByUsername, updateUser, addToCart} = require('./models/Users')
+const {User, addUser, checkUser, getUserByUsername, updateUser, addToCart, getCart, removeFromCart} = require('./models/Users')
 const session = require('express-session')
 
 const app = express()
@@ -24,16 +24,20 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
+//Image Upload storage
 const storage = multer.diskStorage({
+    //Sets the folder for image uploads
     destination: (req, file, callback) => {
         callback(null, 'uploads/')
     },
     filename: (req, file, callback) => {
+        //Sets a unique timestamp to prevent duplicate file names
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         callback(null, uniqueSuffix + path.extname(file.originalname))
     }
@@ -46,30 +50,34 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 // Uses the port provided by .env or defaults to 3000
 const port = process.env.PORT || 3000
 
+//Connects to Mongo DB by using the URI provided by the .env file
 mongoose.connect(process.env.MONGO_URI).then(() => {
     app.listen(port, () => console.log(`Server running on port ${port}`))
 }).catch(err => console.error(err))
 
 const Restaurant = require('./models/Restaurant')
 
-// Create a new restaurant
 app.post('/addRestaurant', upload.single('image'), async (req, res) => {
     try {
         const { name } = req.body
 
+        //Checks if the user has entered a name for the restaurant
         if (!name) {
             return res.status(400).json({ error: 'Name is required' })
         }
 
+        //Checks if the user is logged in
         if (!req.session.username) {
             return res.status(401).json({ error: 'Not Logged In' })
         }
 
         const owner = await User.findOne({ username: req.session.username })
+
         if (!owner) {
             return res.status(401).json({ error: 'User not found' })
         }
 
+        //Creates a new restaurant by using the new restaurant data with the Restaurant model / schema
         const restaurant = new Restaurant({
             name,
             image: req.file ? req.file.filename : null,
@@ -78,6 +86,7 @@ app.post('/addRestaurant', upload.single('image'), async (req, res) => {
             owner: owner._id
         })
 
+        //Saves the restaurant to Mongo DB
         await restaurant.save()
 
         res.json({ message: 'Restaurant added', restaurant })
@@ -87,9 +96,9 @@ app.post('/addRestaurant', upload.single('image'), async (req, res) => {
     }
 })
 
-// Read all restaurants
 app.get('/getRestaurants', async (req, res) => {
     try {
+        //Populates the restaurants variable with the owner and username business values
         const restaurants = await Restaurant.find().populate('owner', 'username business')
         res.json({ restaurants })
     } catch (err) {
@@ -98,25 +107,28 @@ app.get('/getRestaurants', async (req, res) => {
     }
 })
 
-// Delete restaurant by ID
 app.delete('/deleteRestaurant/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
+        //Checks if the user's session has an assigned username
         if (!req.session.username) {
             return res.status(401).json({ error: 'Not Logged In' });
         }
 
+        //Checks if the username in the session matches a stored username
         const owner = await User.findOne({ username: req.session.username });
         if (!owner) {
             return res.status(401).json({ error: 'User not found' });
         }
 
+        //Checks if the current restaurant ID matches a stored one
         const restaurant = await Restaurant.findById(id);
         if (!restaurant) {
             return res.status(404).json({ error: 'Restaurant not found' });
         }
 
+        //Checks if the current user is the user that created the restaurant
         if (restaurant.owner.toString() !== owner._id.toString()) {
             return res.status(403).json({ error: 'Unauthorised: You do not own this restaurant' });
         }
@@ -135,10 +147,12 @@ app.post('/updateRestaurantImage/:id', upload.single('image'), async (req, res) 
         const { id } = req.params;
         const file = req.file;
 
+        //Checks if a file has been uploaded
         if (!file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
+        //Checks if the restaurant they are uploading the image for exists
         const restaurant = await Restaurant.findById(id);
         if (!restaurant) {
             return res.status(404).json({ error: 'Restaurant not found' });
@@ -176,6 +190,7 @@ app.post('/updateRestaurantName/:id', async (req, res) => {
 app.post('/register', async (req, res) => {
     const isBusiness = req.body.business === "on" || req.body.business === true
 
+    //Adds a user to the database by using the User model
     const success = await addUser(
         req.body.firstName,
         req.body.lastName,
@@ -191,10 +206,10 @@ app.post('/register', async (req, res) => {
     }
 })
 
-
 app.post('/login', async (req, res) => {
     const user = await checkUser(req.body.username, req.body.password)
 
+    //Checks if the user has been found and assigns the username and business variables
     if (user) {
         req.session.username = user.username
         req.session.business = user.business
@@ -204,10 +219,10 @@ app.post('/login', async (req, res) => {
     }
 })
 
-
 app.get('/user', async (req, res) => {
     if (req.session.username) {
         const user = await getUserByUsername(req.session.username)
+        //Responds with the id, username and business values as json
         if (user) {
             res.json({
                 _id: user._id,
@@ -221,12 +236,14 @@ app.get('/user', async (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
+    //Clears the user's cookies and sends the success boolean as json
     req.session.destroy(err => {
         if (err) return res.status(500).json({ success: false, message: 'Logout failed' })
         res.clearCookie('connect.sid')
         res.json({ success: true })
     })
 })
+
 
 app.post('/donate/:id', async (req, res) => {
     try {
@@ -250,6 +267,7 @@ app.post('/donate/:id', async (req, res) => {
             return res.status(404).json({ error: 'Restaurant not found' })
         }
 
+        //Assigns the donationReached and donationGoal values to the values set from the database or sets them to their defaults
         restaurant.donationReached = restaurant.donationReached || 0
         restaurant.donationGoal = restaurant.donationGoal || 1000
 
@@ -269,7 +287,6 @@ app.post('/donate/:id', async (req, res) => {
     }
 })
 
-// Get menu items for a restaurant
 app.get('/getMenuItems/:id', async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
@@ -280,7 +297,6 @@ app.get('/getMenuItems/:id', async (req, res) => {
     }
 });
 
-// Add menu item
 app.post('/addMenuItem/:id', async (req, res) => {
     try {
         const { name, price } = req.body;
@@ -296,7 +312,6 @@ app.post('/addMenuItem/:id', async (req, res) => {
     }
 });
 
-// Delete menu item
 app.delete('/deleteMenuItem/:id/:itemId', async (req, res) => {
     try {
         const { id, itemId } = req.params;
@@ -323,4 +338,38 @@ app.post('/addToCart', async (req, res) => {
     }
 
     res.json({success: true, cart: result})
+})
+
+app.get('/getCart', async (req, res) => {
+    if (!req.session.username){
+        return(res.status(401)).json({error: 'Not logged in'})
+    }
+
+    try{
+        const cart = await getCart(req.session.username)
+        res.json({cart: cart || []})
+    } catch(err){
+        console.error(err)
+        res.status(500).json({error: 'Failed to get cart'})
+    }
+})
+
+app.post('/removeFromCart', async (req, res) => {
+    if (!req.session.username){
+        return(res.status(401)).json({error: 'Not logged in'})
+    }
+
+    const {itemId} = req.body
+
+    if (!itemId) {
+        res.status(400).json({error: 'Item ID required'})
+    }
+
+    try{
+        const updatedCart = await removeFromCart(req.session.username, itemId)
+        res.json({cart: updatedCart || []})
+    } catch(err){
+        console.error(err)
+        res.status(500).json({error: 'Failed to remove item'})
+    }
 })

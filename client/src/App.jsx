@@ -7,6 +7,7 @@ import RestaurantMenu from './pages/RestaurantMenu';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import './styling/App.css';
+import CartModal from './pages/CartModal';
 
 function App() {
   const location = useLocation();
@@ -68,38 +69,10 @@ function App() {
           )}
         </nav>
       )}
-
-      {isCartOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0, left: 0,
-            width: '100%', height: '100%',
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center'
-          }}
-        >
-          <div
-            style={{
-              background: 'white',
-              padding: '20px',
-              borderRadius: '10px',
-              width: '300px'
-            }}
-          >
-            <h3>Your Cart</h3>
-
-            <p>No items yet.</p>
-
-            <button
-              style={{ marginTop: '20px', padding: '6px 12px' }}
-              onClick={() => setIsCartOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+        <CartModal
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+        />
 
       <Routes>
         <Route path='/' element={<Home />} />

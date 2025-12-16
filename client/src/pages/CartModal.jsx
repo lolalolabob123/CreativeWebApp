@@ -18,7 +18,7 @@ const CartModal = ({ isOpen, onClose }) => {
         }
     }
 
-    useEffecrtt(() => {
+    useEffect(() => {
         if (isOpen) {
             fetchCart()
         }
@@ -28,9 +28,13 @@ const CartModal = ({ isOpen, onClose }) => {
 
     const removeItem = async (itemId) => {
         try {
-            const res = await fetch('http://localhost:3000/removeFromCart', {}, {
+            const res = await fetch('http://localhost:3000/removeFromCart', {
                 method: 'POST',
                 credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({itemId})
             })
             const data = await res.json()
 
@@ -84,7 +88,7 @@ const CartModal = ({ isOpen, onClose }) => {
                                     border: 'none',
                                     borderRadius: '6px',
                                     padding: '4px 8px',
-                                    cursor: pointer
+                                    cursor: 'pointer'
                                 }}
                                 onClick={() => removeItem(item.itemId)}
                                 >

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const {Schema, model} = mongoose
+const { Schema, model } = mongoose
 
 const cartItemSchema = new Schema({
     itemId: { type: Schema.Types.ObjectId, ref: "MenuItem", required: true },
@@ -10,17 +10,17 @@ const cartItemSchema = new Schema({
 });
 
 const userSchema = new Schema({
-    firstName: {type: String, required: true},
-    lastName: {type: String, required: true},
-    username: {type: String, required: true, unique: true},
-    password: {type: String, required: true},
-    business: {type: Boolean, required: false},
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    business: { type: Boolean, required: false },
     cart: [cartItemSchema]
 })
 
 const User = model('User', userSchema)
 
-async function addUser(firstName, lastName, username, password, business){
+async function addUser(firstName, lastName, username, password, business) {
     try {
         const found = await User.findOne({ username }).exec()
         if (found) return false
@@ -33,26 +33,26 @@ async function addUser(firstName, lastName, username, password, business){
     }
 }
 
-async function getUserByUsername(username){
-    return await User.findOne({username}).exec()
+async function getUserByUsername(username) {
+    return await User.findOne({ username }).exec()
 }
 
-async function checkUser(username, password){
-    const found = await User.findOne({username}).exec()
+async function checkUser(username, password) {
+    const found = await User.findOne({ username }).exec()
     if (!found) return null
     return found.password === password ? found : null
 }
 
-async function updateUser(username, updatedFields){
+async function updateUser(username, updatedFields) {
     return await User.findOneAndUpdate(
-        {username},
-        {$set: updatedFields},
-        {new: true}
+        { username },
+        { $set: updatedFields },
+        { new: true }
     )
 }
 
-async function addToCart(username, item){
-    const user = await User.findOne({username})
+async function addToCart(username, item) {
+    const user = await User.findOne({ username })
 
     if (!user) return null
 
@@ -62,7 +62,7 @@ async function addToCart(username, item){
 
     if (existingItem) {
         existingItem.quantity += 1
-    } else{
+    } else {
         user.cart.push({
             itemId: itemId,
             name: item.name,
@@ -75,19 +75,29 @@ async function addToCart(username, item){
     return user.cart
 }
 
-async function removeFromCart(username, itemId){
-    const user =  await User.findOne({username})
+async function removeFromCart(username, itemId) {
+    const user = await User.findOne({ username })
 
     if (!user) return null
 
-    user.cart = user.cart.filter(item => item.itemId.toString() !== itemId)
+    const item = user.cart.find(
+        item => item.itemId.toString() === itemId
+    )
+
+    if (!item) return user.cart
+
+    if (item.quantity > 1){
+        item.quantity -= 1
+    } else{
+        user.cart = user.cart.filter(item => item.itemId.toString() !== itemId)
+    }
 
     await user.save()
     return user.cart
 }
 
-async function getCart(username){
-    const user = await User.findOne({username}).exec()
+async function getCart(username) {
+    const user = await User.findOne({ username }).exec()
     return user ? user.cart : null
 }
 
